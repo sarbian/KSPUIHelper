@@ -8,7 +8,9 @@ namespace UnityEngine.UI.Extensions
 	[AddComponentMenu("UI/Effects/Extensions/Nicer Outline")]
 	public class NicerOutline : BaseMeshEffect
 	{
-		[SerializeField]
+        private const int VERTICES_PER_QUAD = 6;
+        
+        [SerializeField]
 		private Color m_EffectColor = new Color (0f, 0f, 0f, 0.5f);
 		
 		[SerializeField]
@@ -16,10 +18,14 @@ namespace UnityEngine.UI.Extensions
 		
 		[SerializeField]
 		private bool m_UseGraphicAlpha = true;
-		//
-		// Properties
-		//
-		public Color effectColor
+
+
+	    private static List<UIVertex> verts = new List<UIVertex>();
+
+        //
+        // Properties
+        //
+        public Color effectColor
 		{
 			get
 			{
@@ -86,14 +92,10 @@ namespace UnityEngine.UI.Extensions
 				}
 			}
 		}
-
-        protected void ApplyShadowZeroAlloc(List<UIVertex> verts, Color32 color, int start, int end, float x, float y)
+        
+	    protected void ApplyShadowZeroAlloc(List<UIVertex> verts, Color32 color, int start, int end, float x, float y)
         {
             UIVertex vt;
-
-            var neededCpacity = verts.Count * 2;
-            if (verts.Capacity < neededCpacity)
-                verts.Capacity = neededCpacity;
 
             for (int i = start; i < end; ++i)
             {
@@ -114,10 +116,6 @@ namespace UnityEngine.UI.Extensions
 
         protected void ApplyShadow(List<UIVertex> verts, Color32 color, int start, int end, float x, float y)
         {
-            var neededCpacity = verts.Count * 2;
-            if (verts.Capacity < neededCpacity)
-                verts.Capacity = neededCpacity;
-
             ApplyShadowZeroAlloc(verts, color, start, end, x, y);
         }
 
@@ -128,7 +126,12 @@ namespace UnityEngine.UI.Extensions
 			{
 				return;
 			}
-            List < UIVertex > verts = new List<UIVertex>();
+            
+            verts.Clear();
+            int minCapacity = 9 * (vh.currentVertCount / 4 * VERTICES_PER_QUAD);
+            if (verts.Capacity < minCapacity)
+                verts.Capacity = minCapacity;
+
             vh.GetUIVertexStream(verts);
 
             Text foundtext = GetComponent<Text>();
